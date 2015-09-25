@@ -24,10 +24,12 @@ int = 0
 
 #	subset:
 pr = prg
+res = pr.sort_index()
+print "PR"
+print res
 tmp = [pr.index, pr.values]
-pr.sort(pr.index)
-print "TMP"
-print tmp
+
+
 pr.index = tmp[:1]
 for i in range(pr.values.size):
 	pr.values[i] = tmp[1][i]
