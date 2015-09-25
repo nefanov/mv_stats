@@ -20,6 +20,7 @@ dataset.head()
 
 t1 = read_csv('time_1_efan_m.log',' ', error_bad_lines=False)
 t1.index = dataset.pages_rate.values
+print t1.index
 prg=t1.sure
 prg.head()
 int = 0 
@@ -28,19 +29,13 @@ int = 0
 pr = prg
 pr = pr.sort_index()
 print "Data_sorted_by_DPR:"
-print pr
-tmp = [pr.index, pr.values]
+print pr.index
 
-
-pr.index = tmp[:1]
-for i in range(pr.values.size):
-	pr.values[i] = tmp[1][i]
-print pr
 itog = pr.describe()
 histog = pr.hist()
 print itog
 print 'V = %f' % (itog['std']/itog['mean'])
-X=np.array(dataset.index)
+X=np.array(pr.index)
 Y=np.array(pr.values)
 #print X
 #print Y
