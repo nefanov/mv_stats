@@ -13,6 +13,8 @@ def avg(x,y):
 def dv(x,y):
 	return list(map(lambda a, b: a / b, x, y))
 
+
+
 dataset = read_csv('dv_1.log',' ',index_col=['time'],error_bad_lines=False)
 dataset.head()
 
@@ -24,9 +26,9 @@ int = 0
 
 #	subset:
 pr = prg
-res = pr.sort_index()
-print "PR"
-print res
+pr = pr.sort_index()
+print "Data_sorted_by_DPR:"
+print pr
 tmp = [pr.index, pr.values]
 
 
