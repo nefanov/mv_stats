@@ -1,4 +1,5 @@
 import pandas as pd
+import os
 from pandas import read_csv, DataFrame
 import matplotlib.pyplot as plt
 import statsmodels.api as sm
@@ -17,6 +18,18 @@ def dv(x,y):
 
 dataset = read_csv('dv_1.log',' ',index_col=['time'],error_bad_lines=False)
 dataset.head()
+dataset.index = pd.to_datetime((dataset.index*1e9).astype(int))
+print dataset
+
+#dataset.to_csv("1.txt")
+
+#dataset = read_csv('dv_0.log',' ',index_col=['time'],error_bad_lines=False)
+#dataset.head()
+#dataset.index = pd.to_datetime((dataset.index*1e9).astype(int))
+
+#print dataset
+#f = open("0.txt","w")
+#f.write(dataset.index)#+" "+dataset.values)
 
 t1 = read_csv('time_1_efan_m.log',' ', error_bad_lines=False)
 t1.index = dataset.pages_rate.values
@@ -38,8 +51,7 @@ while i in range(pr.values.size):
 	
 	i=i+3
 	j = 0
-	#if i >= pr.values.size:
-	#	break
+	
 	for j in range(3):
 		if i+j >= pr.values.size:
 			break
@@ -53,8 +65,7 @@ while i in range(pr.values.size):
 		tst50.append(pr.values[i+j])
 	i=i+3
 	j = 0
-	#if i >= pr.values.size:
-	#	break
+	
 
 #tst100 = tst100.sort_index()
 print "tst100"
@@ -63,13 +74,14 @@ print tst100
 pr = pr.sort_index()
 print "Data_sorted_by_DPR:"
 
-i = pr.index[0]
-regres = []
-for i in range( 10000000):
-	regres.append(np.polyfit(pr.index, pr.values,i))
-	i+=20
-print regres
-
+#i = pr.index[0]
+#regres = []
+#for i in range( 10000000):#
+#	regres.append(np.polyfit(pr.index, pr.values,i))
+#	i+=20
+#print regres
+#
+regres = pr.interpolate()
 itog = pr.describe()
 histog = pr.hist()
 print itog
