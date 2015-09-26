@@ -23,27 +23,65 @@ t1.index = dataset.pages_rate.values
 print t1.index
 prg=t1.sure
 prg.head()
-int = 0 
-
+i = 0
+j = 0 
 #	subset:
 pr = prg
+tst100=[]
+tst75=[]
+tst50=[]
+while i in range(pr.values.size):
+	for j in range(3):
+		if i+j >= pr.values.size:
+			break
+		tst100.append(pr.values[i+j])
+	
+	i=i+3
+	j = 0
+	#if i >= pr.values.size:
+	#	break
+	for j in range(3):
+		if i+j >= pr.values.size:
+			break
+		tst75.append(pr.values[i+j])
+	i=i+3
+	j = 0
+	
+	for j in range(3):
+		if i+j >= pr.values.size:
+			break
+		tst50.append(pr.values[i+j])
+	i=i+3
+	j = 0
+	#if i >= pr.values.size:
+	#	break
+
+#tst100 = tst100.sort_index()
+print "tst100"
+print tst100
+
 pr = pr.sort_index()
 print "Data_sorted_by_DPR:"
-print pr.index
+
+i = pr.index[0]
+regres = []
+for i in range( 10000000):
+	regres.append(np.polyfit(pr.index, pr.values,i))
+	i+=20
+print regres
 
 itog = pr.describe()
 histog = pr.hist()
 print itog
 print 'V = %f' % (itog['std']/itog['mean'])
 X=np.array(pr.index)
-Y=np.array(pr.values)
-#print X
-#print Y
+Y=np.array(regres)
 figure = plt.figure()
 plot   = figure.add_subplot(111)
 plot.plot(X,Y,'g')
 plot.grid()
 plt.show()
+
 
 row =  [u'JB', u'p-value', u'skew', u'kurtosis']
 jb_test = sm.stats.stattools.jarque_bera(pr)
@@ -51,57 +89,7 @@ a = np.vstack([jb_test])
 itog = SimpleTable(a, row)
 print itog
 
-print pr
-#plt.savefig('spirit.png', format = 'png')
-pr.index=dataset.index
-print pr
-pr = pr[:'2015-09-21 15:16:10']
-pr2 =pr
-test = sm.tsa.adfuller(pr2)
-print 'adf: ', test[0] 
-print 'p-value: ', test[1]
-print'Critical values: ', test[4]
-n = 0
-if test[0]> test[4]['5%']:
-	print 'stat'
-else:
-	print 'non-stat'
-	print "diff tests"
-	while n < 10:
-		n = n+1
-		pr2 = pr2.diff(periods=4).dropna()
-		test = sm.tsa.adfuller(pr2)
-		print 'adf: ', test[0]
-		print 'p-value: ', test[1]
-		print'Critical values: ', test[4]
-		if test[0]> test[4]['5%']:
-			print 'stat', n
-			break
-		else:
-			print 'non-stat', n
 
-plt.plot(pr2,"r")
-plt.show()
-
-fig = plt.figure()
-ax1 = fig.add_subplot(211)
-fig = sm.graphics.tsa.plot_acf(pr2.values.squeeze(), lags=25, ax=ax1)
-ax2 = fig.add_subplot(212)
-fig = sm.graphics.tsa.plot_pacf(pr2, lags=25, ax=ax2)
-plt.show()
-print pr
-print pr.values
-src_data_model  = pr[:'2015-09-21 15:16:10']
-model = sm.tsa.ARIMA(src_data_model, order=(1,n,1),freq="S").fit(disp=0)	
-
-print model.summary()
-
-q_test = sm.tsa.stattools.acf(model.resid, qstat=True)
-print DataFrame({'Q-stat':q_test[1], 'p-value':q_test[2]})
-
-pred = model.predict('2015-09-21 15:16:10','2015-09-22 16:04:53')
-trn = pr['2015-09-21 15:16:10':]
-print pred.size
 #r2 = r2_score(trn, pred)
 #print 'R^2: %1.2f' % r2
 
@@ -110,9 +98,3 @@ print pred.size
 
 #metrics.mae(trn,pred[1:32])
 
-print pred
-print pr2
-plt.plot(pr2)
-
-plt.plot(pred[:30],'r--')
-plt.show()
