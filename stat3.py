@@ -239,8 +239,10 @@ m = metrics.rmse(trg.sure.values,res)
 
 err = metrics.mae(trg.sure.values,res)
 print m
-print "err"
+print "mean_abs_err"
 print err
+print "in persentage:"
+print(100.0*err/(trg.sure.values.max() - trg.sure.values.min()))
 
 #plot.grid()
 #plt.show()
