@@ -11,8 +11,11 @@ import numpy as np
 from math import log, exp
 from array import array
 from scipy import interpolate
+from scipy import optimize
+import scipy as sp
 #from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.cm as cm 
+
 
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.linear_model import LinearRegression, LogisticRegression
@@ -30,7 +33,66 @@ def avg(x,y):
 def dv(x,y):
 	return list(map(lambda a, b: a / b, x, y))
 
+def MA(a, n=3) :
+    ret = np.cumsum(a, dtype=float)
+    ret[n:] = ret[n:] - ret[:-n]
+    return ret[n - 1:] / n
 
+def WMA(x,y,step_size=1,width=1):
+    bin_centers  = np.arange(np.min(x),np.max(x)-0.5*step_size,step_size)+0.5*step_size
+    bin_avg = np.zeros(len(bin_centers))
+
+    #We're going to weight with a Gaussian function
+    def gaussian(x,amp=1,mean=0,sigma=1):
+        return amp*np.exp(-(x-mean)**2/(2*sigma**2))
+
+    for index in range(0,len(bin_centers)):
+        bin_center = bin_centers[index]
+        weights = gaussian(x,mean=bin_center,sigma=width)
+        bin_avg[index] = np.average(y,weights=weights)
+
+    return (bin_centers,bin_avg)
+
+def hypRegress(ptp,pir):
+    xData = np.arange(len(ptp))
+    yData = pir
+
+    xData = np.array(xData, dtype=float)
+    yData = np.array(yData, dtype= float)
+
+    def funcHyp(x, qi, exp, di):
+        return qi*(1+exp*di*x)**(-1/exp)
+
+    def errfuncHyp(p):
+        return funcHyp(xData, p[0], p[1], p[2]) - yData
+
+    #print(xData.min(), xData.max())
+    #print(yData.min(), yData.max())
+
+    trialX = np.linspace(xData[0], xData[-1], 1000)
+
+    # Fit an hyperbolic
+    popt, pcov = curve_fit(funcHyp, xData, yData)
+    print 'popt'
+    #print(popt)
+    yHYP = funcHyp(trialX, *popt)
+
+    #optimization
+
+    # initial values
+    p1, success = sp.optimize.leastsq(errfuncHyp, popt,maxfev=10000)
+    print p1
+
+    aaaa = funcHyp(trialX, *p1)
+
+    plt.figure()
+    plt.plot(xData, yData, 'r+', label='Data', marker='o')
+    plt.plot(trialX, yHYP, 'r-',ls='--', label="Hyp Fit")
+    plt.plot(trialX, aaaa, 'y', label = 'Optimized')
+    plt.legend()
+    plt.show(block=False)
+    input('pause')
+    return p1
 
 dataset = read_csv('dv_1.log',' ',index_col=['time'],error_bad_lines=False)
 
@@ -145,7 +207,6 @@ print(trg)
 models = [LinearRegression(), RandomForestRegressor(n_estimators=100, max_features ='sqrt'),KNeighborsRegressor(n_neighbors=6),LogisticRegression()]
 #init subset
 Xtrn, Xtest, Ytrn, Ytest = train_test_split(trn, trg, test_size=0.4)
-
 TestModels = DataFrame()
 tmp = {}
 
@@ -160,17 +221,29 @@ for model in models:
 
 TestModels.set_index('Model', inplace=True)
 
-fig, axes = plt.subplots(ncols=2, figsize=(10,4))
-TestModels.R2_Y1.plot(ax=axes[0], kind='bar', title='R2_Y1')
+fig, axes = plt.subplots(ncols=1, figsize=(10,4))
+TestModels.R2_Y1.plot( kind='bar', title='R2_Y1')
 #TestModels.R2_Y2.plot(ax=axes[1], kind='bar', color='green', title='R2_Y2')
-
+#random_forest is the best ->
 model = models[1]
 model.fit(Xtrn, Ytrn)
 inf=model.feature_importances_
 print inf
+#then predict with 
+print trn
+res=model.predict(trn)
+print(res)
+print trg
+print "rmse"
+m = metrics.rmse(trg.sure.values,res)
 
-plot.grid()
-plt.show()
+err = metrics.mae(trg.sure.values,res)
+print m
+print "err"
+print err
+
+#plot.grid()
+#plt.show()
 
 row =  [u'JB', u'p-value', u'skew', u'kurtosis']
 jb_test = sm.stats.stattools.jarque_bera(pr)
@@ -181,12 +254,34 @@ print(itog)
 fig = plt.figure()
 from mpl_toolkits.mplot3d import Axes3D
 ax = Axes3D(fig)
-ys = t1.dpr
+ys = t1.dpr.values
 xs = t1.speed.values
 ax.scatter(xs,ys,t1.sure.values)
 plt.show()
+f = interpolate.interp2d(xs, ys, t1.sure.values, kind='linear')
+xnew=[]
+xx=[]
+import random
+yy=np.arange(100000000,2000000000,100000000)
+for i in range(ynew.size):
+	xx.append(random.randrange(50,100,10))
+xnew, ynew = np.meshgrid(xx,yy)
+
+
+#print len(xnew)
+#ynew=ynew.tolist()
+#print len(ynew)
+
+#xnew=np.array(xnew)
+
+znew=f(xx,yy)
+print len(znew)
+ax1=Axes3D(fig)
+ax1.plot_surface(xnew,ynew,znew)
+plt.show()
 
 #######################################################################################
+
 tf1=t1[t1.speed==50]
 xf1=tf1.dpr.values
 yf1=tf1.sure.values
@@ -201,9 +296,34 @@ tf3=t1[t1.speed==100]
 xf3=tf3.dpr.values
 yf3=tf3.sure.values
 tf3.to_csv("out100")#add plot
-popt1, pcov1 = curve_fit(func, xf1, yf1)
-popt2, pcov2 = curve_fit(func, xf2, yf2)
-popt3, pcov3 = curve_fit(func, xf3, yf3)
+
+f1 = interpolate.interp1d(xf1, yf1,kind='slinear')
+xnew1=np.arange(100000000,2000000000,1000000)
+ynew1=f1(xnew1)
+
+dat = MA(yf1,5)
+
+
+
+f2 = interpolate.interp1d(xf2, yf2,kind='slinear')
+xnew2=np.arange(100000000,2000000000,1000000)
+ynew2=f2(xnew2)
+f3 = interpolate.interp1d(xf3, yf3,kind='slinear')
+xnew3=np.arange(100000000,2000000000,1000000)
+ynew3=f3(xnew3)
+
+print xf1[4:].size
+print len(dat)
+plt.plot(xf1, yf1, 'g--', xf1[4:], dat, 'r')#,xf2, yf2, 'b--', xnew2, ynew2, 'r',xf3, yf3, 'b--', xnew3, ynew3, 'r')
+#plt.plot(xf1, yf1, 'g--', xreg1, yreg1, 'r',xf2, yf2, 'b--', xnew2, ynew2, 'r',xf3, yf3, 'b--', xnew3, ynew3, 'r')
+plt.show()
+#hypRegress(xf1,yf1)
+#hypRegress(xf2,yf2)
+#hypRegress(xf3,yf3)
+'''
+#popt1, pcov1 = curve_fit(func, xf1, yf1)
+#popt2, pcov2 = curve_fit(func, xf2, yf2)
+#popt3, pcov3 = curve_fit(func, xf3, yf3)
 #plt.figure()
 #plt.plot(xf3,yf3,'ko', label="Original Noised data on speed=50")
 #plt.plot(xf3,func(xf3,*popt3),'r-',label="log")
@@ -211,28 +331,29 @@ popt3, pcov3 = curve_fit(func, xf3, yf3)
 #plt.show()
 #######################################################################################
 
-f = interpolate.interp2d(xs, ys, t1.sure.values, kind='linear')
-ynew=[]
-xnew=[]
-g1 = t1.dpr.values.max()
-g2 = t1.dpr.values.min()
+#f = interpolate.interp2d(xs, ys, t1.sure.values, kind='linear')
+#ynew=[]
+#xnew=[]
+#g1 = t1.dpr.values.max()
+#g2 = t1.dpr.values.min()
 
 #xnew = np.arange(t1.dpr.values.min(),t1.dpr.values.max(), ( g1-g2 )/10)
 #import random
 #for i in range(xnew.size):
 #	ynew.append(random.randrange(50,100,10))
 #chk
-for i in range(t1.index.size):
-	xnew.append(t1.dpr.values[i])
-	ynew.append(t1.speed.values[i])
-znew = f(xnew,ynew)
+#for i in range(t1.index.size):
+#	xnew.append(t1.dpr.values[i])
+#	ynew.append(t1.speed.values[i])
+#znew = f(xnew,ynew)
 
-print "Znew"
-print(znew.size)
-zz=znew.tolist()
+#print "Znew"
+#print(znew.size)
+#zz=znew.tolist()
 
 #print xnew.size, ynew.size, znew.size
 #ax.scatter
-plt.plot(xnew, znew[0,:])
+#plt.plot(xnew, znew[0,:])
 
-plt.show()
+#plt.show()
+'''
