@@ -267,20 +267,13 @@ import random
 yy=np.arange(100000000,2000000000,100000000)
 for i in range(ynew.size):
 	xx.append(random.randrange(50,100,10))
-xnew, ynew = np.meshgrid(xx,yy)
 
-
-#print len(xnew)
-#ynew=ynew.tolist()
-#print len(ynew)
-
-#xnew=np.array(xnew)
 
 znew=f(xx,yy)
 print len(znew)
-ax1=Axes3D(fig)
-ax1.plot_surface(xnew,ynew,znew)
-plt.show()
+#ax1=Axes3D(fig)
+#ax1.plot_surface(xnew,ynew,znew)
+#plt.show()
 
 #######################################################################################
 
@@ -303,10 +296,30 @@ f1 = interpolate.interp1d(xf1, yf1,kind='slinear')
 xnew1=np.arange(100000000,2000000000,1000000)
 ynew1=f1(xnew1)
 
-dat = MA(yf1,5)
+w = 5
+wd = w - 1
+dat1 = MA(yf1,w)
+dat2 = MA(yf2,w)
+dat3 = MA(yf3,w)
 
+print "new_val"
+print t1.sure.values
+i=0
+ind = t1.index[t1.speed.values==100]
+for i in range(len(ind)-wd):
+	t1.sure.values[ind[i+wd-1]] = dat1[i]
 
+ind = t1.index[t1.speed.values==75]
+for i in range(len(ind)-wd):
+	t1.sure.values[ind[i+wd-1]] = dat1[i]
 
+ind = t1.index[t1.speed.values==50]
+for i in range(len(ind)-wd):
+	t1.sure.values[ind[i+wd-1]] = dat1[i]
+
+print "new_val"
+print t1.sure.values
+'''
 f2 = interpolate.interp1d(xf2, yf2,kind='slinear')
 xnew2=np.arange(100000000,2000000000,1000000)
 ynew2=f2(xnew2)
@@ -322,7 +335,7 @@ plt.show()
 #hypRegress(xf1,yf1)
 #hypRegress(xf2,yf2)
 #hypRegress(xf3,yf3)
-'''
+
 #popt1, pcov1 = curve_fit(func, xf1, yf1)
 #popt2, pcov2 = curve_fit(func, xf2, yf2)
 #popt3, pcov3 = curve_fit(func, xf3, yf3)
