@@ -192,13 +192,16 @@ print("Corr_table")
 ct = t1.corr()
 print(ct)
 
-print('DDDDD')
-print(t1)
+#print('DDDDD')
+#print(t1)
 
 #init target:
 inew = np.arange(0,t1.index.size, 1)
 t1.insert(1,'dpr',t1.index)
 t1.index = inew
+print("Corr_table")
+ct = t1.corr()
+print(ct)
 
 trg = t1[['sure']]
 trn = t1.drop(['end','sure'],axis=1)
@@ -221,8 +224,8 @@ for model in models:
 
 TestModels.set_index('Model', inplace=True)
 
-fig, axes = plt.subplots(ncols=1, figsize=(10,4))
-TestModels.R2_Y1.plot( kind='bar', title='R2_Y1')
+fig, axes = plt.subplots(ncols=1, figsize=(5,4))
+TestModels.R2_Y1.plot( kind='bar', title='R2 metrics for different models - Random Forest wins')
 #TestModels.R2_Y2.plot(ax=axes[1], kind='bar', color='green', title='R2_Y2')
 #random_forest is the best ->
 model = models[1]
@@ -230,10 +233,10 @@ model.fit(Xtrn, Ytrn)
 inf=model.feature_importances_
 print inf
 #then predict with 
-print trn
+#print trn
 res=model.predict(trn)
 print(res)
-print trg
+#print trg
 print "rmse"
 m = metrics.rmse(trg.sure.values,res)
 
@@ -247,19 +250,17 @@ print(100.0*err/(trg.sure.values.max() - trg.sure.values.min()))
 #plot.grid()
 #plt.show()
 
-row =  [u'JB', u'p-value', u'skew', u'kurtosis']
-jb_test = sm.stats.stattools.jarque_bera(pr)
-a = np.vstack([jb_test])
-itog = SimpleTable(a, row)
-print(itog)
-
 fig = plt.figure()
 from mpl_toolkits.mplot3d import Axes3D
 ax = Axes3D(fig)
 ys = t1.dpr.values
 xs = t1.speed.values
-ax.scatter(xs,ys,t1.sure.values)
+#ax.scatter(xs,ys,t1.sure.values, label='Original Scalar Field (DPR,Speed)=>(Migration Time)')
+#plt.show()
+
+ax.scatter(xs,ys,res)
 plt.show()
+
 f = interpolate.interp2d(xs, ys, t1.sure.values, kind='linear')
 xnew=[]
 xx=[]
@@ -280,17 +281,17 @@ print len(znew)
 tf1=t1[t1.speed==50]
 xf1=tf1.dpr.values
 yf1=tf1.sure.values
-tf1.to_csv("out50")
+#tf1.to_csv("out50")
 #add plot
 tf2=t1[t1.speed==75]
 xf2=tf2.dpr.values
 yf2=tf2.sure.values
-tf2.to_csv("out75")
+#tf2.to_csv("out75")
 #add plot
 tf3=t1[t1.speed==100]
 xf3=tf3.dpr.values
 yf3=tf3.sure.values
-tf3.to_csv("out100")#add plot
+#tf3.to_csv("out100")#add plot
 
 f1 = interpolate.interp1d(xf1, yf1,kind='slinear')
 xnew1=np.arange(100000000,2000000000,1000000)
@@ -301,6 +302,8 @@ wd = w - 1
 dat1 = MA(yf1,w)
 dat2 = MA(yf2,w)
 dat3 = MA(yf3,w)
+plt.plot(xf2, yf2,'g--', xf2[wd:], dat2,'r', label="Moving Average(window_size=5)")
+plt.show()
 print dat1
 print "new_val"
 print t1.sure.values
@@ -324,11 +327,11 @@ print t1.sure.values
 ax = Axes3D(fig)
 ys = t1.dpr.values
 xs = t1.speed.values
-#ax.scatter(xs,ys,t1.sure.values)
+ax.scatter(xs,ys,t1.sure.values)
 i=0
 znew = []
 f2d  = interpolate.interp2d(xs, ys, t1.sure.values, kind='linear')
-print f2d(xs[6],ys[6])
+
 for i in range(xs.size):
 	znew.append(f2d(xs[i],ys[i]))
 
