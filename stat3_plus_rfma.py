@@ -301,24 +301,51 @@ wd = w - 1
 dat1 = MA(yf1,w)
 dat2 = MA(yf2,w)
 dat3 = MA(yf3,w)
-
+print dat1
 print "new_val"
 print t1.sure.values
 i=0
-ind = t1.index[t1.speed.values==100]
-for i in range(len(ind)-wd):
-	t1.sure.values[ind[i+wd-1]] = dat1[i]
-
-ind = t1.index[t1.speed.values==75]
-for i in range(len(ind)-wd):
-	t1.sure.values[ind[i+wd-1]] = dat1[i]
-
+t1['sure']=t1['sure'].astype(float)
 ind = t1.index[t1.speed.values==50]
 for i in range(len(ind)-wd):
-	t1.sure.values[ind[i+wd-1]] = dat1[i]
+	t1.sure.values[ind[i+wd]] = dat1[i]
+i=0
+ind = t1.index[t1.speed.values==75]
+for i in range(len(ind)-wd):
+	t1.sure.values[ind[i+wd]] = dat2[i]
+i=0
+ind = t1.index[t1.speed.values==100]
+for i in range(len(ind)-wd):
+	t1.sure.values[ind[i+wd]] = dat3[i]
 
 print "new_val"
 print t1.sure.values
+
+ax = Axes3D(fig)
+ys = t1.dpr.values
+xs = t1.speed.values
+#ax.scatter(xs,ys,t1.sure.values)
+i=0
+znew = []
+f2d  = interpolate.interp2d(xs, ys, t1.sure.values, kind='linear')
+print f2d(xs[6],ys[6])
+for i in range(xs.size):
+	znew.append(f2d(xs[i],ys[i]))
+
+#ax.scatter(xs,ys,znew,'ro')
+#plt.show()
+
+print "MA results:"
+print "rmse:"
+m = metrics.rmse(t1.sure.values,znew)
+err = metrics.mae(t1.sure.values,znew)
+print m
+print "mean_abs_err"
+print err
+print "in persentage:"
+print(100.0*err/(t1.sure.values.max() - t1.sure.values.min()))
+
+#= interpolate.interp2d()
 '''
 f2 = interpolate.interp1d(xf2, yf2,kind='slinear')
 xnew2=np.arange(100000000,2000000000,1000000)
