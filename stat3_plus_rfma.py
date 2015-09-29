@@ -230,6 +230,7 @@ TestModels.R2_Y1.plot( kind='bar', title='R2 metrics for different models - Rand
 #random_forest is the best ->
 model = models[1]
 model.fit(Xtrn, Ytrn)
+#model.summary()
 inf=model.feature_importances_
 print inf
 #then predict with 
@@ -261,7 +262,7 @@ xs = t1.speed.values
 ax.scatter(xs,ys,res)
 plt.show()
 
-f = interpolate.interp2d(xs, ys, t1.sure.values, kind='linear')
+f = interpolate.interp2d(xs, ys, t1.sure.values, kind='linear') #bicubic and biquadrat gives great oscillation because of small window of averaging procedure 
 xnew=[]
 xx=[]
 import random
