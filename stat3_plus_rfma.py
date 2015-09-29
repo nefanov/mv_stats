@@ -210,6 +210,13 @@ print(trg)
 models = [LinearRegression(), RandomForestRegressor(n_estimators=100, max_features ='sqrt'),KNeighborsRegressor(n_neighbors=6),LogisticRegression()]
 #init subset
 Xtrn, Xtest, Ytrn, Ytest = train_test_split(trn, trg, test_size=0.5) #25 % 
+def normalize(train, test): 
+	train = train.astype(float, copy = True) 
+	test = test.astype(float, copy = True) 
+	X_std = np.sqrt(np.sum(train ** 2, axis=0)) 
+	X_std[X_std == 0] = 1 
+	return ((train - np.average(train, axis=0))/X_std, (test - np.average(train, axis=0))/X_std) 
+Xtrn_norm, Xtest_norm = normalize(Xtrn, Xtest)
 TestModels = DataFrame()
 tmp = {}
 
@@ -218,8 +225,8 @@ for model in models:
 	m = str(model)
 	tmp['Model'] = m[:m.index('(')]    
 	i=0
-	model.fit(Xtrn, Ytrn.sure) 
-	tmp['R2_Y%s'%str(i+1)] = r2_score(Ytest.sure, model.predict(Xtest))
+	model.fit(Xtrn_norm, Ytrn.sure) 
+	tmp['R2_Y%s'%str(i+1)] = r2_score(Ytest.sure, model.predict(Xtest_norm))
 	TestModels = TestModels.append([tmp])
 
 TestModels.set_index('Model', inplace=True)
