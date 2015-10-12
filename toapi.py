@@ -5,7 +5,7 @@ from sklearn.ensemble import RandomForestRegressor
 #from sklearn.cross_validation import train_test_split
 from scipy.optimize import curve_fit
 
-def MA(a, n=3) :
+def MA(a, n=3):
     rev = a[:n]
     ret = np.cumsum(a, dtype=float)
     ret[n:] = ret[n:] - ret[:-n]
@@ -20,12 +20,9 @@ def rf_train(data,n_estimators=100):
 	return model
 
 def rf_test(Xtst,model):
-
 	return model.predict(Xtst)
 
 def gen_interp(data,wd=5):
-
-	s_sets=[]
 	MA_res=[]
 	for i in range(data.speed.values.min(),data.speed.values.max(),10):
 		MA_res = MA(data.mig_time.values,wd)
